@@ -69,7 +69,7 @@
 
       <div class="ape">
         <div class="aol apg">
-          <input type="text" value="03/10/2016" class="form-control" data-provide="datepicker">
+          <input ng-model="dt | date:'MM-dd-yyyy'" type="text" class="form-control" data-provide="datepicker">
           <span class="bv">
             <i class="fa fa-calendar-check-o"></i>
           </span>
@@ -198,6 +198,8 @@
     <script src="bower_components/Chart.js/Chart.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="bower_components/angular-chart.js/dist/angular-chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
+
     <script>
       // execute/clear BS loaders for docs
       $(function(){while(window.BS&&window.BS.loader&&window.BS.loader.length){(window.BS.loader.pop())()}})
@@ -209,9 +211,13 @@
         $scope.ts_chart_dataset = [];
         $scope.ts_chart_labels = [];
         $scope.chart_options = {'barValueSpacing': 20};
+        $scope.dt = new Date();
+        var format = d3.time.format("%Y-%m-%d");
         $scope.query = encodeURIComponent(
-          'SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE time > now() - 1d GROUP BY time(30m)');
+          "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE time >= '" + format($scope.dt) + "' GROUP BY time(30m)");
         console.log($scope.query);
+        console.log(format($scope.dt));
+
         $http({
              method: 'GET',
              url: 'http://localhost:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.query

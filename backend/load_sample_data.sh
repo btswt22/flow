@@ -1,4 +1,4 @@
-for line in $(cat 1_20160303.txt); do
+for line in $(cat 1_20160306.txt); do
   curl -i -XPOST 'http://localhost:8086/write?db=hourly_counter_db' --data-binary "$line";
 done
 

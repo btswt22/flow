@@ -69,7 +69,7 @@
 
       <div class="ape">
         <div class="aol apg">
-          <input ng-model="dt | date:'MM-dd-yyyy'" type="text" class="form-control" data-provide="datepicker">
+          <input ng-model="dt" type="text" class="form-control" data-provide="datepicker">
           <span class="bv">
             <i class="fa fa-calendar-check-o"></i>
           </span>
@@ -102,7 +102,7 @@
               </canvas>
             </div>
             <strong class="dh">Average Daily Traffic</strong>
-            <h2>10223</h2>
+            <h2>{{daily_total}}</h2>
           </div>
           <div class="gi ali">
             <div class="ako ale">
@@ -158,10 +158,9 @@
     <div class="fu apt alg ala ta te">
       <div class="gp ge apu ala">
         <h3 class="ani dj">
-          10,223
-          <!-- <small class="ank anl">5%</small> -->
+          {{daily_total | number}}
         </h3>
-        <span class="anj">Daily Average</span>
+        <span class="anj">Daily Total</span>
       </div>
       <div class="gp ge apu ala">
         <h3 class="ani dj">
@@ -208,49 +207,79 @@
       var app = angular.module('app', ['chart.js']);
       app.controller('mainController', ['$scope', '$http', function($scope, $http){
         $scope.title = 'My Traffic Summary';
+
+        // TS chart
         $scope.ts_chart_dataset = [];
         $scope.ts_chart_labels = [];
-        $scope.chart_options = {'barValueSpacing': 20};
-        $scope.dt = new Date();
-        var format = d3.time.format("%Y-%m-%d");
-        $scope.query = encodeURIComponent(
-          "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE time >= '" + format($scope.dt) + "' GROUP BY time(30m)");
-        console.log($scope.query);
-        console.log(format($scope.dt));
+        $scope.chart_options = {'barValueSpacing': 5};
 
-        $http({
-             method: 'GET',
-             url: 'http://localhost:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.query
-           }).then(function successCallback(response) {
-               // this callback will be called asynchronously
-               // when the response is available
-               response.data.results.forEach(function(resp){
-                  var name = resp.series[0].name;
-                  var cols = resp.series[0].col;
-                  var values = resp.series[0].values;
-                  var labels = [];
-                  var series_data = [];
+        // Summary Stats
+        $scope.daily_total = 0;
 
-                  values.forEach(function(elm){
-                    // labels.push("");
-                    var timestamp = elm[0].slice(11, 16)
-                    labels.push(timestamp);
-                    series_data.push(elm[1]);
-                  });
-                  console.log(series_data)
 
-                  var i = series_data.length;
-                  while(series_data[series_data.length-1] === null){
-                    series_data.pop();
-                    labels.pop();
-                  }
+        var format = d3.time.format("%m-%d-%Y");
+        $scope.dt = format(new Date());
 
-                  $scope.ts_chart_labels = labels;
-                  $scope.ts_chart_dataset = [series_data];
-               });
-           }, function errorCallback(response) {
-               // called asynchronously if an error occurs
-          });
+        // TS chart Query
+        $scope.$watch('dt', function(newVal, oldVal){
+          var query_dt = d3.time.format("%Y-%m-%d")(new Date(newVal));
+          $scope.query = encodeURIComponent(
+          "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d GROUP BY time(30m)");
+          console.log($scope.query);
+          $http({
+               method: 'GET',
+               url: 'http://localhost:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.query
+             }).then(function successCallback(response) {
+                 // this callback will be called asynchronously
+                 // when the response is available
+                 response.data.results.forEach(function(resp){
+                    var name = resp.series[0].name;
+                    var cols = resp.series[0].col;
+                    var values = resp.series[0].values;
+                    var labels = [];
+                    var series_data = [];
+
+                    values.forEach(function(elm){
+                      // labels.push("");
+                      var timestamp = elm[0].slice(11, 16)
+                      labels.push(timestamp);
+                      series_data.push(elm[1]);
+                    });
+                    console.log(series_data)
+
+                    var i = series_data.length;
+                    while(series_data[series_data.length-1] === null){
+                      series_data.pop();
+                      labels.pop();
+                    }
+
+                    $scope.ts_chart_labels = labels;
+                    $scope.ts_chart_dataset = [series_data];
+                 });
+             }, function errorCallback(response) {
+                 // called asynchronously if an error occurs
+            });
+        }, true);// End watch scope
+
+        // Daily Total Query
+        $scope.$watch('dt', function(newVal, oldVal){
+          var query_dt = d3.time.format("%Y-%m-%d")(new Date(newVal));
+          $scope.query = encodeURIComponent(
+          "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d");
+          $http({
+               method: 'GET',
+               url: 'http://localhost:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.query
+             }).then(function successCallback(response) {
+                 // this callback will be called asynchronously
+                 // when the response is available
+                 response.data.results.forEach(function(resp){
+                    $scope.daily_total = resp.series[0].values[0][1];
+                 });
+             }, function errorCallback(response) {
+                 // called asynchronously if an error occurs
+            });
+        }, true);// End watch scope
+
       }]);
     </script>
   </body>

@@ -68,26 +68,26 @@
         <h3 class="apc">{{title}}</h3>
 
         <label for="indoorSelect" class ="apd"> Indoor Sensor ID: </label>
-        <select select name="indoorSelect"
+        <select name="indoorSelect"
         id="indoorSelect"
-        ng-options="option.name for option in indoor_sensor.availableOptions track by option.id"
-        ng-model="indoor_sensor.selectedOption">
+        ng-options="o as o for o in available_sensors"
+        ng-model="search_params.indoor_sensor">
         </select><br>
-        <tt>option = {{indoor_sensor.selectedOption}}</tt><br/>
+        <tt>option = {{search_params.indoor_sensor}}</tt><br/>
 
         <label for="outdoorSelect" class ="apd"> Outdoor Sensor ID: </label>
-        <select select name="outdoorSelect"
+        <select name="outdoorSelect"
         id="outdoorSelect"
-        ng-options="option.name for option in outdoor_sensor.availableOptions track by option.id"
-        ng-model="outdoor_sensor.selectedOption">
+        ng-options="o as o for o in available_sensors"
+        ng-model="search_params.outdoor_sensor">
         </select><br>
-        <tt>option = {{outdoor_sensor.selectedOption}}</tt><br/>
+        <tt>option = {{search_params.outdoor_sensor}}</tt><br/>
 
       </div>
 
       <div class="ape">
         <div class="aol apg">
-          <input ng-model="dt" type="text" class="form-control" data-provide="datepicker">
+          <input ng-model="search_params.dt" type="text" class="form-control" data-provide="datepicker">
           <span class="bv">
             <i class="fa fa-calendar-check-o"></i>
           </span>
@@ -158,7 +158,7 @@
           <center><strong class ="dh"> No Data</strong></center>
         </div>
         <div class="aqo ali" ng-show="has_data">
-          <strong class="dh">Daily Traffic</strong>
+          <strong class="dh">Outdoor Traffic</strong>
           <canvas
             class="chart chart-bar"
             chart-data="ts_chart_dataset"
@@ -224,6 +224,10 @@
       // execute/clear BS loaders for docs
       $(function(){while(window.BS&&window.BS.loader&&window.BS.loader.length){(window.BS.loader.pop())()}})
 
+      Array.prototype.isNull = function (){
+        return this.join().replace(/,/g,'').length === 0;
+      };
+
       var app = angular.module('app', ['chart.js']);
       app.controller('mainController', ['$scope', '$http', function($scope, $http){
 
@@ -231,21 +235,10 @@
         $scope.title = 'My Traffic Summary';
 
         // Select indoor and outdoor sensor ID dropdowns
-        $scope.indoor_sensor = {
-          availableOptions: [
-            {id: '1', name: 'CAC000001'},
-            {id: '2', name: 'CAC000002'},
-          ],
-          selectedOption: {id: '1', name: 'CAC000001'} //Default value of the select in the ui
-        };
-
-        $scope.outdoor_sensor = {
-          availableOptions: [
-            {id: '1', name: 'CAC000003'},
-            {id: '2', name: 'CAC000004'},
-          ],
-          selectedOption: {id: '1', name: 'CAC000003'} //Default value of the select in the ui
-        };
+        $scope.available_sensors = [
+          'sbx_i_0001',
+          'sbx_f_0001'
+        ];
 
         // Indicate if data available for selected date
         $scope.has_data = false;
@@ -262,12 +255,19 @@
         var format = d3.time.format("%m-%d-%Y");
         $scope.dt = format(new Date());
 
+        $scope.search_params = {
+          'dt': format(new Date()),
+          'indoor_sensor': 'sbx_i_0001',
+          'outdoor_sensor': 'sbx_f_0001'
+        }
+
         // TS chart Query
-        $scope.$watch('dt', function(newVal, oldVal){
-          var query_dt = d3.time.format("%Y-%m-%d")(new Date(newVal));
+        $scope.$watch('search_params', function(newVal, oldVal){
+          console.log(newVal);
+          var query_dt = d3.time.format("%Y-%m-%d")(new Date(newVal.dt));
           $scope.query = encodeURIComponent(
-          "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE sensor='sbx_f_0001' and time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d GROUP BY time(30m)");
-          console.log($scope.query);
+          "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE sensor='"+ newVal.indoor_sensor +"' and time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d GROUP BY time(30m)");
+          //console.log($scope.query);
           $http({
                method: 'GET',
                url: 'http://24.14.64.152:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.query
@@ -275,7 +275,6 @@
                  // this callback will be called asynchronously
                  // when the response is available
                  response.data.results.forEach(function(resp){
-                    console.log(resp);
                     if('series' in resp){
                       var name = resp.series[0].name;
                       var cols = resp.series[0].col;
@@ -289,7 +288,7 @@
                         labels.push(timestamp);
                         series_data.push(elm[1]);
                       });
-                      console.log(series_data)
+                      //console.log(series_data)
 
                       var i = series_data.length;
                       while(series_data[series_data.length-1] === null){
@@ -315,12 +314,11 @@
                     } else{
                       $scope.has_data = false;
                     }
-                    console.log($scope.has_data);
 
                     if ($scope.has_data === true) {
                       var query_dt = d3.time.format("%Y-%m-%d")(new Date(newVal));
                       $scope.query = encodeURIComponent(
-                      "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE sensor='sbx_f_0001' and time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d");
+                      "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE sensor='" + newVal.indoor_sensor + "' and time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d");
                       $http({
                            method: 'GET',
                            url: 'http://24.14.64.152:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.query

@@ -214,27 +214,33 @@
 
     <!-- QUICK STATS -->
     <div class="anv aky ala">
-      <h3 class="anw anx">Quick daily stats</h3>
+      <h3 class="anw anx">Daily stats</h3>
     </div>
 
-    <div class="fu apt alg ala ta te">
-      <div class="gp ge apu ala">
-        <h3 class="ani dj">
-          {{outdoor_day_total | number}}
-        </h3>
-        <span class="anj">Total Outdoor Traffic</span>
-      </div>
-      <div class="gp ge apu ala">
-        <h3 class="ani dj">
-          {{indoor_day_total | number}}
-        </h3>
-        <span class="anj">Total Indoor Traffic</span>
-      </div>
-      <div class="gp ge apu ala">
-        <h3 class="ani dj">
-          {{conversion_rate | number}}%
-        </h3>
-        <span class="anj">Conversion Rate</span>
+    <div class="quickstats">
+      <div class="fu apt alg ala ta te">
+
+        <div class="gp ge apu ala">
+          <h3 class="ani dj">
+            {{outdoor_day_total | number}}
+          </h3>
+          <span class="anj">Total Outdoor Traffic</span>
+        </div>
+
+        <div class="gp ge apu ala">
+          <h3 class="ani dj">
+            {{indoor_day_total | number}}
+          </h3>
+          <span class="anj">Total Indoor Traffic</span>
+        </div>
+
+        <div class="gp ge apu ala">
+          <h3 class="ani dj">
+            {{conversion_rate | number}}%
+          </h3>
+          <span class="anj">Conversion Rate</span>
+        </div>
+
       </div>
     </div>
 

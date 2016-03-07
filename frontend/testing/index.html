@@ -11,7 +11,6 @@
     <title>
       My Traffic Summary
     </title>
-
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet">
     <link href="../assets/css/toolkit-inverse.css" rel="stylesheet">
@@ -66,23 +65,21 @@
     <div class="apa">
       <div class="apb">
         <h3 class="apc">{{title}}</h3>
-
         <label for="indoorSelect" class ="apd"> Indoor Sensor ID: </label>
-        <select name="indoorSelect"
+        <select name="indoorSelect" class="form-control"
         id="indoorSelect"
         ng-options="o as o for o in available_sensors"
         ng-model="search_params.indoor_sensor">
         </select><br>
-        <tt>option = {{search_params.indoor_sensor}}</tt><br/>
+        <!-- <tt>option = {{search_params.indoor_sensor}}</tt><br/> -->
 
         <label for="outdoorSelect" class ="apd"> Outdoor Sensor ID: </label>
-        <select name="outdoorSelect"
+        <select name="outdoorSelect" class="form-control"
         id="outdoorSelect"
         ng-options="o as o for o in available_sensors"
         ng-model="search_params.outdoor_sensor">
         </select><br>
-        <tt>option = {{search_params.outdoor_sensor}}</tt><br/>
-
+        <!-- <tt>option = {{search_params.outdoor_sensor}}</tt><br/> -->
       </div>
 
       <div class="ape">

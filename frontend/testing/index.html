@@ -117,7 +117,7 @@
               </canvas>
             </div>
             <strong class="dh">Average Daily Traffic</strong>
-            <h2>{{daily_total}}</h2>
+            <h2>{{outdoor_day_total}}</h2>
           </div>
           <div class="gi ali">
             <div class="ako ale">
@@ -149,17 +149,17 @@
       </div>
 
 
-      <!-- TIME SERIES CHART -->
+      <!-- OUTDOOR TIME SERIES CHART -->
       <div role="tabpanel" class="oi active" id="sales">
-        <div class="aqo ali" ng-hide="has_data">
+        <div class="aqo ali" ng-hide="has_outdoor_data">
           <center><strong class ="dh"> No Data</strong></center>
         </div>
-        <div class="aqo ali" ng-show="has_data">
+        <div class="aqo ali" ng-show="has_outdoor_data">
           <strong class="dh">Outdoor Traffic</strong>
           <canvas
             class="chart chart-bar"
-            chart-data="ts_chart_dataset"
-            chart-labels="ts_chart_labels"
+            chart-data="ts_outdoor_chart_dataset"
+            chart-labels="ts_outdoor_chart_labels"
             height="80"
             chart-hover = "false"
             chart-options = "chart_options"
@@ -169,41 +169,41 @@
         </div>
       </div>
 
-      <!-- TIME SERIES CHART -->
+      <!-- INDOOR TIME SERIES CHART -->
       <div role="tabpanel" class="oi active" id="sales">
-        <div class="aqo ali" ng-hide="has_data">
+        <div class="aqo ali" ng-hide="has_indoor_data">
           <center><strong class ="dh"> No Data</strong></center>
         </div>
-        <div class="aqo ali" ng-show="has_data">
-          <strong class="dh">Outdoor Traffic</strong>
+        <div class="aqo ali" ng-show="has_indoor_data">
+          <strong class="dh">Indoor Traffic</strong>
           <canvas
             class="chart chart-bar"
-            chart-data="ts_chart_dataset"
-            chart-labels="ts_chart_labels"
+            chart-data="ts_indoor_chart_dataset"
+            chart-labels="ts_indoor_chart_labels"
             height="80"
             chart-hover = "false"
             chart-options = "chart_options"
-            chart-colours = ['#AEEFFF']
+            chart-colours = ['#C64F36']
             chart-legend="false">
           </canvas>
         </div>
       </div>
 
-      <!-- TIME SERIES CHART -->
+      <!-- CONVERSION TIME SERIES CHART -->
       <div role="tabpanel" class="oi active" id="sales">
-        <div class="aqo ali" ng-hide="has_data">
+        <div class="aqo ali" ng-hide="has_outdoor_data">
           <center><strong class ="dh"> No Data</strong></center>
         </div>
-        <div class="aqo ali" ng-show="has_data">
-          <strong class="dh">Outdoor Traffic</strong>
+        <div class="aqo ali" ng-show="has_outdoor_data">
+          <strong class="dh">Traffic Conversion Rate (Indoor/Outdoor) </strong>
           <canvas
             class="chart chart-bar"
-            chart-data="ts_chart_dataset"
-            chart-labels="ts_chart_labels"
+            chart-data="ts_conversion_chart_dataset"
+            chart-labels="ts_conversion_chart_labels"
             height="80"
             chart-hover = "false"
             chart-options = "chart_options"
-            chart-colours = ['#AEEFFF']
+            chart-colours = ['#12B7C1']
             chart-legend="false">
           </canvas>
         </div>
@@ -220,27 +220,21 @@
     <div class="fu apt alg ala ta te">
       <div class="gp ge apu ala">
         <h3 class="ani dj">
-          {{daily_total | number}}
+          {{outdoor_day_total | number}}
         </h3>
-        <span class="anj">Total Traffic</span>
+        <span class="anj">Total Outdoor Traffic</span>
       </div>
       <div class="gp ge apu ala">
         <h3 class="ani dj">
-          8am - 10am
+          {{indoor_day_total | number}}
         </h3>
-        <span class="anj">Busiest Hour</span>
+        <span class="anj">Total Indoor Traffic</span>
       </div>
       <div class="gp ge apu ala">
         <h3 class="ani dj">
-          Thursday
+          {{conversion_rate | number}}%
         </h3>
-        <span class="anj">Busiest Day</span>
-      </div>
-      <div class="gp ge apu ala">
-        <h3 class="ani dm">
-          758
-        </h3>
-        <span class="anj">Downloads</span>
+        <span class="anj">Conversion Rate</span>
       </div>
     </div>
 
@@ -279,15 +273,26 @@
         ];
 
         // Indicate if data available for selected date
-        $scope.has_data = false;
+        $scope.has_outdoor_data = false;
+        $scope.has_indoor_data = false;
+        $scope.has_new_data = {
+          has_new_outdoor_data:false,
+          has_new_indoor_data:false
+        }
 
         // TS chart
-        $scope.ts_chart_dataset = [];
-        $scope.ts_chart_labels = [];
+        $scope.ts_outdoor_chart_dataset = [];
+        $scope.ts_outdoor_chart_labels = [];
+        $scope.ts_indoor_chart_dataset = [];
+        $scope.ts_indoor_chart_labels = [];
+        $scope.ts_conversion_chart_dataset = [];
+        $scope.ts_conversion_chart_labels = [];
         $scope.chart_options = {'barValueSpacing': 5};
 
         // Summary Stats
-        $scope.daily_total = 0;
+        $scope.outdoor_day_total = 0;
+        $scope.indoor_day_total = 0;
+        $scope.conversion_rate = 0;
 
         // Format selected date into calendar dropdown format
         var format = d3.time.format("%m-%d-%Y");
@@ -301,14 +306,17 @@
 
         // TS chart Query
         $scope.$watch('search_params', function(newVal, oldVal){
-          console.log(newVal);
           var query_dt = d3.time.format("%Y-%m-%d")(new Date(newVal.dt));
-          $scope.query = encodeURIComponent(
+
+          // Query
+          $scope.outdoor_query = encodeURIComponent(
+          "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE sensor='"+ newVal.outdoor_sensor +"' and time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d GROUP BY time(30m)");
+          $scope.indoor_query = encodeURIComponent(
           "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE sensor='"+ newVal.indoor_sensor +"' and time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d GROUP BY time(30m)");
-          //console.log($scope.query);
+
           $http({
                method: 'GET',
-               url: 'http://24.14.64.152:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.query
+               url: 'http://24.14.64.152:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.outdoor_query
              }).then(function successCallback(response) {
                  // this callback will be called asynchronously
                  // when the response is available
@@ -328,13 +336,13 @@
                       });
                       //console.log(series_data)
 
-                      var i = series_data.length;
-                      while(series_data[series_data.length-1] === null){
-                        series_data.pop();
-                        labels.pop();
-                      }
-                      $scope.ts_chart_labels = labels;
-                      $scope.ts_chart_dataset = [series_data];
+                      // var i = series_data.length;
+                      // while(series_data[series_data.length-1] === null){
+                      //   series_data.pop();
+                      //   labels.pop();
+                      // }
+                      $scope.ts_outdoor_chart_labels = labels;
+                      $scope.ts_outdoor_chart_dataset = [series_data];
 
                       // Destroy existing chart to avoid displaying old data on hover
                       var $chart;
@@ -345,40 +353,141 @@
                         $chart = chart;
                       });
                       if (series_data.isNull()){
-                        $scope.has_data = false;
+                        $scope.has_outdoor_data = false;
                       } else {
-                        $scope.has_data = true;
+                        $scope.has_outdoor_data = true;
                       }
                     } else{
-                      $scope.has_data = false;
+                      $scope.has_outdoor_data = false;
                     }
 
-                    if ($scope.has_data === true) {
-                      var query_dt = d3.time.format("%Y-%m-%d")(new Date(newVal));
-                      $scope.query = encodeURIComponent(
-                      "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE sensor='" + newVal.indoor_sensor + "' and time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d");
+                    if ($scope.has_outdoor_data === true) {
+                      var query_dt = d3.time.format("%Y-%m-%d")(new Date(newVal.dt));
+                      $scope.outdoor_sum_query = encodeURIComponent(
+                      "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE sensor='" + newVal.outdoor_sensor + "' and time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d");
                       $http({
                            method: 'GET',
-                           url: 'http://24.14.64.152:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.query
+                           url: 'http://24.14.64.152:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.outdoor_sum_query
                          }).then(function successCallback(response) {
                              // this callback will be called asynchronously
                              // when the response is available
                              response.data.results.forEach(function(resp){
-                                $scope.daily_total = resp.series[0].values[0][1];
+                                $scope.outdoor_day_total = resp.series[0].values[0][1];
                              });
+                             $scope.has_new_data.has_new_outdoor_data = true;
                          }, function errorCallback(response) {
                              // called asynchronously if an error occurs
                         });
                     } else {
-                      $scope.daily_total = 0;
+                      $scope.outdoor_day_total = 0;
                     }; // End if
 
                  });
              }, function errorCallback(response) {
                  // called asynchronously if an error occurs
-            });
+          });
+
+          $http({
+               method: 'GET',
+               url: 'http://24.14.64.152:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.indoor_query
+             }).then(function successCallback(response) {
+                 // this callback will be called asynchronously
+                 // when the response is available
+                 response.data.results.forEach(function(resp){
+                    if('series' in resp){
+                      var name = resp.series[0].name;
+                      var cols = resp.series[0].col;
+                      var values = resp.series[0].values;
+                      var labels = [];
+                      var series_data = [];
+
+                      values.forEach(function(elm){
+                        // labels.push("");
+                        var timestamp = elm[0].slice(11, 16)
+                        labels.push(timestamp);
+                        series_data.push(elm[1]);
+                      });
+
+                      $scope.ts_indoor_chart_labels = labels;
+                      $scope.ts_indoor_chart_dataset = [series_data];
+
+                      // Destroy existing chart to avoid displaying old data on hover
+                      var $chart;
+                      $scope.$on("create", function (event, chart) {
+                        if (typeof $chart !== "undefined") {
+                          $chart.destroy();
+                        }
+                        $chart = chart;
+                      });
+                      if (series_data.isNull()){
+                        $scope.has_indoor_data = false;
+                      } else {
+                        $scope.has_indoor_data = true;
+
+                      }
+                    } else{
+                      $scope.has_indoor_data = false;
+                    }
+
+                    if ($scope.has_indoor_data === true) {
+                      var query_dt = d3.time.format("%Y-%m-%d")(new Date(newVal.dt));
+                      $scope.indoor_sum_query = encodeURIComponent(
+                      "SELECT sum(counter) FROM hourly_counter_db..hourly_counter WHERE sensor='" + newVal.indoor_sensor + "' and time >= '" + query_dt + "' and time <= '" + query_dt + "' + 1d");
+                      $http({
+                           method: 'GET',
+                           url: 'http://24.14.64.152:8086/query?pretty=true&db=hourly_counter_db&q=' + $scope.indoor_sum_query
+                         }).then(function successCallback(response) {
+                             // this callback will be called asynchronously
+                             // when the response is available
+                             response.data.results.forEach(function(resp){
+                                $scope.indoor_day_total = resp.series[0].values[0][1];
+                             });
+                             $scope.has_new_data.has_new_indoor_data = true;
+                         }, function errorCallback(response) {
+                             // called asynchronously if an error occurs
+                        });
+                    } else {
+                      $scope.indoor_day_total = 0;
+                    }; // End if
+
+                 });
+             }, function errorCallback(response) {
+                 // called asynchronously if an error occurs
+          });
         }, true);// End watch scope
 
+        // Check if need to draw conversion chart
+        $scope.$watch('has_new_data', function(newVal, oldVal){
+          console.log(newVal);
+
+          $scope.ts_conversion_chart_dataset = [];
+          $scope.ts_conversion_chart_labels = [];
+          if (newVal.has_new_outdoor_data === true && newVal.has_new_indoor_data === true) {
+            console.log($scope.indoor_day_total);
+            console.log($scope.outdoor_day_total);
+            $scope.conversion_rate = ($scope.indoor_day_total/$scope.outdoor_day_total) * 100;
+            var dataset = [];
+            var length = $scope.ts_outdoor_chart_labels.length;
+            var i = 0;
+            while(i <= length - 1){
+              $scope.ts_conversion_chart_labels.push($scope.ts_outdoor_chart_labels[i]);
+              var conversion = 0;
+              if ($scope.ts_indoor_chart_dataset[0][i] > 0 && $scope.ts_outdoor_chart_dataset[0][i] > 0) {
+                conversion = ($scope.ts_indoor_chart_dataset[0][i]/$scope.ts_outdoor_chart_dataset[0][i]);
+              }
+              dataset.push(conversion);
+              i = i + 1;
+            }
+
+            $scope.ts_conversion_chart_dataset.push(dataset);
+
+            console.log($scope.indoor_day_total);
+            console.log($scope.outdoor_day_total);
+
+            $scope.has_new_data.has_new_outdoor_data = false;
+            $scope.has_new_data.has_new_indoor_data = false;
+          }
+        }, true);
       }]);
     </script>
   </body>

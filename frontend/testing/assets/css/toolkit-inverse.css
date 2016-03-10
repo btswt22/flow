@@ -176,6 +176,11 @@ td,
 th {
   padding: 0;
 }
+
+#logo {
+    width:90%;
+}
+
 /*! Source: https://github.com/h5bp/html5-boilerplate/blob/master/src/css/main.bq */
 @media print {
   *,
@@ -293,6 +298,7 @@ figure {
 img {
   vertical-align: middle;
 }
+
 .cn,
 .co > img,
 .co a > img,
@@ -9208,7 +9214,7 @@ canvas {
     top: 0;
     bottom: 0;
     left: 0;
-    width: 70px;
+    width: 150px;
     margin-top: 0;
     margin-bottom: 0;
     background-color: #30343e;
@@ -9231,10 +9237,10 @@ canvas {
   padding-bottom: 10px;
   font-size: 18px;
   line-height: 1;
-  color: #6f7890;
+  color: #AEEFFF;
   text-align: center;
   border-bottom: 0;
-  background-color: #0f1013;
+  background-color: #1ca8dd;
 }
 @media (min-width: 768px) {
   .aov {
@@ -9354,7 +9360,7 @@ canvas {
   margin-bottom: 5px;
   font-weight: normal;
   font-size: 85%;
-  color: #434857;
+  color: #888888;
   letter-spacing: 1px;
   text-transform: uppercase;
 }

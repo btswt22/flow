@@ -178,7 +178,7 @@ th {
 }
 
 #logo {
-    width:90%;
+    width:80%;
 }
 
 /*! Source: https://github.com/h5bp/html5-boilerplate/blob/master/src/css/main.bq */
@@ -9228,7 +9228,7 @@ canvas {
 @media (min-width: 768px) {
   .aou > .bw,
   .aou > .ft {
-    padding-left: 85px;
+    padding-left: 200px;
   }
 }
 .aov {
@@ -9240,7 +9240,7 @@ canvas {
   color: #AEEFFF;
   text-align: center;
   border-bottom: 0;
-  background-color: #1ca8dd;
+  background-color: #FFFFFF;
 }
 @media (min-width: 768px) {
   .aov {

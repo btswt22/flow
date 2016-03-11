@@ -97,9 +97,9 @@
       <li class="active" role="presentation">
         <a href="#sales" role="tab" data-toggle="tab" aria-controls="sales">Daily Breakdown</a>
       </li>
-      <li role="presentation">
+      <!-- <li role="presentation">
         <a href="#traffic" role="tab" data-toggle="tab" aria-controls="traffic">Overview</a>
-      </li>
+      </li> -->
     </ul>
 
     <hr class="akr alp">
@@ -184,7 +184,7 @@
             height="80"
             chart-hover = "false"
             chart-options = "chart_options"
-            chart-colours = ['#C64F36']
+            chart-colours = ['#1BA7DC']
             chart-legend="false">
           </canvas>
         </div>
@@ -455,6 +455,7 @@
                         });
                     } else {
                       $scope.indoor_day_total = 0;
+                      $scope.conversion_rate = 0;
                     }; // End if
 
                  });
